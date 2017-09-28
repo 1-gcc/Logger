@@ -20,28 +20,31 @@ extern "C"
 	void setPattern(char*p)
 	{
 	}
-	void trace(char * format,...)
+	void trace(const char*s,const char * format,va_list & vlist)
 	{
-			time_t timer;
-			struct tm  * tbuf;
-			char buffer2[ 512 ];
-			struct timeval tval;
-			struct timezone tz;
+		time_t timer;
+		struct tm  * tbuf;
+		char buffer2[ 512 ];
+		char buffer3[ 128 ];
+		struct timeval tval;
+		struct timezone tz;
 		char buffer[8192];
-		va_list(vlist);
-		va_start(vlist,format);
+		//va_list(vlist);
+		//va_start(vlist,format);
 		vsnprintf(buffer,sizeof(buffer),format,vlist);
 		va_end(vlist);
 		gettimeofday(&tval,&tz);
 		tbuf = gmtime(&tval.tv_sec);
 		strftime( buffer2 , sizeof(buffer2) ,
 					"%Y%m%d %H%M%S",tbuf);
+		sprintf(buffer3,"%04d",getpid());
 		FILE * fp = fopen(traceFilename,"a");
 		if(fp)
 		{
 			try
 			{
-			fprintf(fp,"\n%s%02d:%s",buffer2,(int)(tval.tv_usec%1000)/10,buffer);
+			fprintf(fp,"\n%s%02d:%s:%3s:%s",buffer2,
+					(int)(tval.tv_usec%1000)/10,buffer3,s,buffer);
 			}
 			catch(...)
 			{
